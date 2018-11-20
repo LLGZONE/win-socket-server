@@ -9,13 +9,17 @@ HttpReq::~HttpReq() {
 	this->headers.clear();
 }
 
-
 void HttpReq::parse(string message) {
 	this->rawMessage = message;
 	vector<string> v, header;
 	Utils::split(message, v, "\r\n\r\n");
-	this->body = v.at(1);
-	v.pop_back();
+	if (v.size() > 1) {
+		this->body = v.at(1);
+		v.pop_back();
+	}
+	else {
+		this->body = "";
+	}
 	Utils::split(v.front(), header, "\r\n");
 	string statusLine = header.front();
 	for (auto iter = header.begin() + 1; iter != header.end(); iter++) {
@@ -36,18 +40,44 @@ HttpRes::~HttpRes() {
 }
 
 string HttpRes::toString() {
-	string statusLine = this->version + " " + to_string(this->status) + " " + this->phrase + "\r\n";
+	string statusLine = this->version + " " + std::to_string(this->status) + " " + this->phrase + "\r\n";
 	string headers = "";
 	string headerEnd = "\r\n";
-	string body = this->body;
+	string body = string(this->body.begin(), this->body.end());
 	for (auto header : this->headers) {
-		headers += header.first + " " + header.second;
+		headers += header.first + ": " + header.second + "\r\n";
 	}
 	if (this->hasHeader("Content-Length")) {
-		string length = to_string(body.length());
+		string length = std::to_string(body.size());
 		headers += "Content-Length: " + length + "\r\n";
 	}
 	return statusLine + headers + headerEnd + body;
+}
+
+char* HttpRes::c_str() {
+	string statusLine = this->version + " " + std::to_string(this->status) + " " + this->phrase + "\r\n";
+	string headers = "";
+	string headerEnd = "\r\n";
+	for (auto header : this->headers) {
+		headers += header.first + ": " + header.second + "\r\n";
+	}
+	if (this->hasHeader("Content-Length")) {
+		string length = std::to_string(this->body.size());
+		headers += "Content-Length: " + length + "\r\n";
+	}
+	string header = statusLine + headers + headerEnd;
+	int len = header.size() + this->body.size();
+	int bodySize = 0;
+	const char* first = header.c_str();
+	char* res = new char[len];
+	for (int i = 0; i < strlen(first); i++) {
+		res[i] = first[i];
+	}
+	for (int i = strlen(first), j = 0; i < len; i++) {
+		res[i] = this->body[j++];
+	}
+	printf("len: %d,header: %d, body: %d", len, header.size(), this->body.size());
+	return res;
 }
 
 bool HttpRes::hasHeader(string name) {
@@ -59,13 +89,29 @@ bool HttpRes::hasHeader(string name) {
 }
 
 void HttpRes::addHeader(string name, string value) {
-	this->headers.insert(name, value);
+	this->headers[name] = value;
 }
 
 string HttpRes::removeHeader(string name) {
 	auto value = this->headers[name];
 	this->headers.erase(name);
 	return value;
+}
+
+int HttpRes::size() {
+	string statusLine = this->version + " " + std::to_string(this->status) + " " + this->phrase + "\r\n";
+	string headers = "";
+	string headerEnd = "\r\n";
+	for (auto header : this->headers) {
+		headers += header.first + ": " + header.second + "\r\n";
+	}
+	if (this->hasHeader("Content-Length")) {
+		string length = std::to_string(this->body.size());
+		headers += "Content-Length: " + length + "\r\n";
+	}
+	string header = statusLine + headers + headerEnd;
+	int len = header.size() + this->body.size();
+	return len;
 }
 
 Http::Http() {
@@ -127,4 +173,4 @@ void HttpRes::initStatusMap(unordered_map<int, string> statusMap) {
 	statusMap[505] = "HTTP Version not supported";
 }
 
-unordered_map<string, string> mimeType = Utils::parseMimeTypes("./mime.types");
+unordered_map<string, string> Http::mimeType(Utils::parseMimeTypes("./mime.types"));

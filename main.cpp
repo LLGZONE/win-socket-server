@@ -1,10 +1,20 @@
-#include "Server.h"
+#include "HttpServer.h"
+#include <functional>
+#include <Windows.h>
+#include <csignal>
 
-int main() {
-	Server server;
-	server.WinSockInit();
-	server.createServer("127.0.0.1", 8080);
-	server.listenSocket();
-	while (true)
-		server.handleReq();
+int handle();
+
+int main(int argc, char*argv) {
+	HttpServer server;
+	signal(SIGINT, (_crt_signal_t)handle);
+	server.config("./conf.conf");
+	server.createHttpServer(server.host, server.port);
+}
+
+int handle() {
+	printf("bye!");
+	Sleep(1000);
+	exit(1);
+	return 1;
 }

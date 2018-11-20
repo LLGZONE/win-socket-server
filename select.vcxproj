@@ -68,7 +68,9 @@
   <ItemGroup>
     <ClInclude Include="HttpParser.h" />
     <ClInclude Include="HttpServer.h" />
+    <ClInclude Include="pages.h" />
     <ClInclude Include="Server.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="WinSockEnv.h" />
   </ItemGroup>
   <ItemGroup>
@@ -77,6 +79,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="WinSockEnv.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig" />
+    <None Include="conf.conf" />
+    <None Include="index.css" />
+    <None Include="index.html" />
+    <None Include="index.js" />
+    <None Include="mime.types" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,13 +1,25 @@
 #pragma once
 
 #include "Server.h"
-#include "Http.h"
+#include "HttpParser.h"
 
-class HttpServer :public Server {
-private:
-	int httpPaser(string);
+class HttpServer : public Server {
 public:
-	int createServer();
-	int handleRequest();
-	int handleResponse();
+	string host;
+	int port;
+	HttpServer& createHttpServer(string host, int port);
+	HttpServer& onRequest() {};
+	HttpServer& onClose() {};
+	vector<thread> threads = {};
+	inline ~HttpServer() {
+		for (thread &t : this->threads) {
+			if (t.joinable())
+				t.join();
+		}
+		this->close();
+	};
+	string baseDir = ".";
+	void config(string path);
+private:
+	void handleSingleRequest(SOCKET fd);
 };

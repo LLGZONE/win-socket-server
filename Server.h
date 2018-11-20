@@ -9,16 +9,17 @@ using namespace std;
 
 class Server {
 private:
-	SOCKET servSocket;
 	char recvbuf[255];
+	string baseUrl = "./";
+public:
 	string host;
 	int port;
-public:
 	int createServer(string host, int port);
 	int WinSockInit();
 	virtual int listenSocket(int max = 1024);
 	virtual void close();
 	virtual void handleReq();
-	virtual ~Server() {};
+	virtual ~Server() { this->close(); };
+	SOCKET servSocket;
 	Server();
 };

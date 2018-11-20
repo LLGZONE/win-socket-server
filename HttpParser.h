@@ -1,7 +1,6 @@
 #pragma once 
 
 #include <unordered_map>
-#include <string>
 #include "Utils.h"
 
 using namespace std;
@@ -14,7 +13,7 @@ public:
 	string method;
 	string url;
 	string version;
-	unordered_map<string, string> headers;
+	unordered_map<string, string> headers = {};
 	string body;
 	string rawMessage;
 	void parse(string message);
@@ -27,9 +26,11 @@ public:
 	string version = "HTTP/1.1";
 	int status = 200;
 	string phrase = "ok";
-	unordered_map<string, string> headers;
-	string body;
+	unordered_map<string, string> headers = {};
+	vector<char> body;
 	string toString();
+	char* c_str();
+	int size();
 	bool hasHeader(string name);
 	void addHeader(string name, string value);
 	string removeHeader(string name);

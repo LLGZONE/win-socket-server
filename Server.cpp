@@ -38,11 +38,11 @@ int Server::listenSocket(int maxConnection) {
 		this->close();
 		return -1;
 	}
-	cout << "Server is listening on " << this->host << ":" << this->port << endl;
 	return 0;
 }
 
 void Server::close() {
+	printf("server close\n");
 	closesocket(this->servSocket);
 	WSACleanup();
 }
@@ -55,20 +55,29 @@ void Server::handleReq() {
 		int nSize = sizeof(SOCKADDR);
 
 		cout << "waiting for client socket" << endl;
-		SOCKET clntSock = accept(this->servSocket, (SOCKADDR*)&clntAddr, &nSize);
-		cout << "client coming" << endl;
-		char *str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 11\r\n\r\nhello world";
 		while (true) {
-			int iResult = recv(clntSock, recvbuf, 255, 0);
-			if (iResult > 0)
-				printf("Bytes received: %d\n", iResult);
-			else if (iResult == 0) {
-				closesocket(clntSock);
-				printf("Connection closed\n");
-				break;
+			SOCKET clntSock = accept(this->servSocket, (SOCKADDR*)&clntAddr, &nSize);
+			struct timeval tv_out;
+			tv_out.tv_sec = 1000;
+			tv_out.tv_usec = 0;
+			setsockopt(clntSock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv_out, sizeof(tv_out));
+			cout << "client coming" << endl;
+			while (true) {
+				char *str = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 11\r\n\r\nhello world";
+				int iResult;
+				do {
+					iResult = recv(clntSock, recvbuf, 255, 0);
+					if (iResult > 0)
+						printf("Bytes received: %d\n", iResult);
+					cout << 1 << endl;
+				} while (iResult == 255);
+				if (iResult <= 0) {
+					closesocket(clntSock);
+					cout << "close1" << endl;
+					break;
+				}
+				int sendLen = send(clntSock, str, strlen(str) + sizeof(char), NULL);
 			}
-			cout << 1 << endl;
-			send(clntSock, str, strlen(str) + sizeof(char), NULL);
 		}
 	}
 }
